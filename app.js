@@ -353,8 +353,15 @@ document.addEventListener('wheel', e => {
 
 
 stackEl.addEventListener('click', e => {
+  const card = e.target.closest('.card-stack');
+  if (!card) return;
   const target = e.target.closest('.star, .champ, .tag, .card-stack.behind');
   if (!target) return;
+
+  if (card.classList.contains('behind')) {
+    goTo(parseInt(card.dataset.idx));
+    return;
+  }
 
   if (target.classList.contains('star')) {
     e.stopPropagation();
@@ -386,10 +393,6 @@ stackEl.addEventListener('click', e => {
     search.value = text;
     search.dispatchEvent(new Event('input'));
     return;
-  }
-
-  if (target.classList.contains('behind')) {
-    goTo(parseInt(target.dataset.idx));
   }
 });
 
