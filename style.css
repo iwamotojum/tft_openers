@@ -42,7 +42,7 @@ body {
 }
 .search-wrapper input {
   width: 100%;
-  padding: 12px 16px 12px 42px;
+  padding: 12px 44px 12px 42px;
   border: 1px solid #2a2a2a;
   border-radius: 10px;
   background: #1a1a1a;
@@ -60,11 +60,38 @@ body {
 .search-icon {
   position: absolute;
   left: 14px;
-  top: 50%;
+  top: 40%;
   transform: translateY(-50%);
   color: #555;
-  font-size: 16px;
+  font-size: 40px;
   pointer-events: none;
+}
+.search-clear {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 30px;
+  width: 30px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: #555;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s, background 0.2s;
+}
+.search-clear svg {
+  display: block;
+}
+.search-clear.visible {
+  display: flex;
+}
+.search-clear:hover {
+  color: #e0e0e0;
+  background: rgba(255,255,255,0.08);
 }
 
 .suggestions {

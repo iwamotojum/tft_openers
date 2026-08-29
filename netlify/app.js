@@ -302,7 +302,7 @@ document.addEventListener('wheel', e => {
 
 
 stackEl.addEventListener('click', e => {
-  const target = e.target.closest('.star, .champ-name, .tag, .card-stack.behind');
+  const target = e.target.closest('.star, .champ, .tag, .card-stack.behind');
   if (!target) return;
 
   if (target.classList.contains('star')) {
@@ -321,9 +321,10 @@ stackEl.addEventListener('click', e => {
     return;
   }
 
-  if (target.classList.contains('champ-name')) {
+  if (target.classList.contains('champ') || target.closest('.champ')) {
     e.stopPropagation();
-    search.value = target.textContent.trim();
+    const name = target.closest('.champ').querySelector('.champ-name').textContent.trim();
+    search.value = name;
     search.dispatchEvent(new Event('input'));
     return;
   }

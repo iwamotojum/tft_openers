@@ -63,6 +63,7 @@ function getTraitCounts(units) {
 
 const stackEl = document.getElementById('stack');
 const search = document.getElementById('search');
+const searchClear = document.getElementById('searchClear');
 const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
 
@@ -352,7 +353,7 @@ document.addEventListener('wheel', e => {
 
 
 stackEl.addEventListener('click', e => {
-  const target = e.target.closest('.star, .champ-name, .tag, .card-stack.behind');
+  const target = e.target.closest('.star, .champ, .tag, .card-stack.behind');
   if (!target) return;
 
   if (target.classList.contains('star')) {
@@ -371,9 +372,10 @@ stackEl.addEventListener('click', e => {
     return;
   }
 
-  if (target.classList.contains('champ-name')) {
+  if (target.classList.contains('champ') || target.closest('.champ')) {
     e.stopPropagation();
-    search.value = target.textContent.trim();
+    const name = target.closest('.champ').querySelector('.champ-name').textContent.trim();
+    search.value = name;
     search.dispatchEvent(new Event('input'));
     return;
   }
@@ -432,6 +434,13 @@ search.addEventListener('input', () => {
   animating = false;
   renderAnimated(true);
   updateSuggestions();
+  searchClear.classList.toggle('visible', search.value.length > 0);
+});
+
+searchClear.addEventListener('click', () => {
+  search.value = '';
+  search.focus();
+  search.dispatchEvent(new Event('input'));
 });
 
 document.getElementById('suggestions').addEventListener('click', e => {
