@@ -63,6 +63,8 @@ function getTraitCounts(units) {
 
 const stackEl = document.getElementById('stack');
 const search = document.getElementById('search');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
 
 const traitPalette = [
   '#ff5555','#ff79c6','#bd93f9','#8be9fd','#50fa7b',
@@ -300,6 +302,7 @@ function renderAnimated(forward) {
   });
 
   renderDots();
+  updateNavButtons();
 }
 
 function render() {
@@ -309,6 +312,7 @@ function render() {
   if (filtered.length === 0) {
     stackEl.innerHTML = '<div class="empty-state">No openers found</div>';
     renderDots();
+    updateNavButtons();
     return;
   }
 
@@ -319,6 +323,7 @@ function render() {
   stackEl.innerHTML = buildStackHtml(favs, q, startI, endI, 0);
 
   renderDots();
+  updateNavButtons();
 }
 
 document.addEventListener('keydown', e => {
@@ -392,6 +397,16 @@ document.getElementById('clearFavs').addEventListener('click', () => {
   animating = false;
   render();
 });
+
+const updateNavButtons = () => {
+  const q = search.value.toLowerCase().trim();
+  const n = applyFilterAndSort(q).length;
+  prevBtn.disabled = currentIdx <= 0;
+  nextBtn.disabled = currentIdx >= n - 1;
+};
+
+prevBtn.addEventListener('click', () => goTo(currentIdx - 1));
+nextBtn.addEventListener('click', () => goTo(currentIdx + 1));
 
 const allChamps = [...new Set(data.flatMap(e => e.units))];
 const allTraitsList = [...new Set(Object.values(traits).flat())];
