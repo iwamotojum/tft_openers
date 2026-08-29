@@ -159,6 +159,9 @@ body {
 }
 
 .card-stack .champ {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
   padding: 6px 0;
   font-size: 26px;
   font-weight: 700;
@@ -169,9 +172,25 @@ body {
   cursor: pointer;
   border-radius: 4px;
   transition: background 0.15s;
+  font-size: 22px;
 }
-.card-stack .champ-name:hover { background: rgba(167,139,250,0.15); }
+.card-stack .champ:hover { background: rgba(167,139,250,0.15); }
 .card-stack .champ-name.matched { color: #a78bfa; font-weight: 600; }
+.card-stack .champ-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+.card-stack .champ-traits {
+  display: flex;
+  gap: 3px;
+}
+.card-stack .champ-trait {
+  width: 18px;
+  height: 18px;
+  opacity: 0.7;
+}
 
 .card-stack .champ-img-wrap {
   display: inline-block;
@@ -179,7 +198,8 @@ body {
   height: 50px;
   overflow: hidden;
   vertical-align: middle;
-  margin-left: 8px;
+  margin-right: 8px;
+  flex-shrink: 0;
 }
 .card-stack .champ-img {
   width: 100%;
@@ -196,6 +216,7 @@ body {
   margin-right: 4px;
   border: 1px solid;
   border-radius: 3px;
+  opacity: 0.7;
 }
 
 .card-stack .trait-summary {
@@ -203,12 +224,12 @@ body {
   padding-top: 10px;
   border-top: 1px solid #2a2a2a;
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 5px;
 }
 .card-stack .trait-summary .tag {
-  padding: 4px 12px;
+  padding: 4px;
   border-radius: 5px;
   font-size: 13px;
   border: 1px solid;

@@ -63,6 +63,9 @@ function getTraitCounts(units) {
 
 const stackEl = document.getElementById('stack');
 const search = document.getElementById('search');
+const searchClear = document.getElementById('searchClear');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
 
 const traitPalette = [
   '#ff5555','#ff79c6','#bd93f9','#8be9fd','#50fa7b',
@@ -118,7 +121,10 @@ function buildCardHtml(entry, q) {
   const champHtml = units.map(u => {
     const isMatch = q && normalizeSearch(u).includes(nq);
     const imgSrc = `images/champions/${champImageFile(u)}.png`;
-    return `<div class="champ"><div class="champ-name ${isMatch ? 'matched' : ''}">${u}<span class="champ-img-wrap"><img class="champ-img" src="${imgSrc}" alt="${u}" loading="lazy"></span></div></div>`;
+    const champTraits = (traits[u] || []).map(t =>
+      `<img class="trait-img champ-trait" style="border-color:${traitColor(t)}" src="images/traits/${traitImageFile(t)}.png" alt="${t}" title="${t}" loading="lazy">`
+    ).join('');
+    return `<div class="champ"><span class="champ-img-wrap"><img class="champ-img" src="${imgSrc}" alt="${u}" loading="lazy"></span><div class="champ-info"><div class="champ-name ${isMatch ? 'matched' : ''}">${u}</div><div class="champ-traits">${champTraits}</div></div></div>`;
   }).join('');
 
   const traitCounts = getTraitCounts(units);
@@ -161,8 +167,13 @@ function goTo(idx) {
     const cards = stackEl.querySelectorAll('.card-stack');
     for (const card of cards) {
       card.style.transition = 'none';
-      const localI = parseInt(card.dataset.idx) - currentIdx;
-      card.style.transform = `translateX(${localI * 190}px)`;
+      const offset = parseInt(card.dataset.idx) - idx;
+      const st = coverflowStyle(offset);
+      card.style.transform = st.t;
+      card.style.opacity = st.o;
+      card.style.filter = st.f;
+      card.style.zIndex = st.z;
+      void card.offsetWidth;
     }
     animating = false;
   }
@@ -202,6 +213,51 @@ function applyFilterAndSort(q) {
   return result;
 }
 
+const CARD_OFFSET = 260;
+const COVERFLOW_RADIUS = 3;
+
+function coverflowStyle(offset) {
+  const abs = Math.abs(offset);
+  const sign = offset === 0 ? 0 : Math.sign(offset);
+  const cx = 'translate(-50%, -50%)';
+
+  if (offset === 0) {
+    return { t: `${cx} translateX(0) scale(1) rotateY(0deg)`, o: 1, z: 30, f: 'none', pe: 'auto' };
+  }
+  if (abs === 1) {
+    return {
+      t: `${cx} translateX(${sign * CARD_OFFSET}px) scale(0.84) rotateY(${-sign * 24}deg)`,
+      o: 0.65, z: 20, f: 'brightness(0.75)', pe: 'auto'
+    };
+  }
+  if (abs === 2) {
+    return {
+      t: `${cx} translateX(${sign * CARD_OFFSET * 1.8}px) scale(0.68) rotateY(${-sign * 38}deg)`,
+      o: 0.38, z: 10, f: 'brightness(0.55) blur(1px)', pe: 'auto'
+    };
+  }
+  return {
+    t: `${cx} translateX(${sign * CARD_OFFSET * 4}px) scale(0.5) rotateY(${-sign * 30}deg)`,
+    o: 0, z: 1, f: 'brightness(0.4) blur(2px)', pe: 'none'
+  };
+}
+
+function buildStackHtml(favs, q, startI, endI, extraOffset) {
+  const parts = [];
+  for (let idx = startI; idx <= endI; idx++) {
+    const entry = filtered[idx];
+    const offset = (idx - currentIdx) + extraOffset;
+    const st = coverflowStyle(offset);
+    const isCurrent = offset === 0;
+    const isFav = favs.has(entryKey(entry));
+    parts.push(`<div class="card-stack ${isCurrent ? 'current' : 'behind'}${isFav ? ' favorited' : ''}" data-idx="${idx}"
+      style="transform: ${st.t}; opacity: ${st.o}; z-index: ${st.z}; filter: ${st.f}; pointer-events: ${st.pe};">
+      ${buildCardHtml(entry, q)}
+    </div>`);
+  }
+  return parts.join('');
+}
+
 function renderAnimated(forward) {
   const q = search.value.toLowerCase().trim();
   filtered = applyFilterAndSort(q);
@@ -213,27 +269,25 @@ function renderAnimated(forward) {
     return;
   }
 
-  const showCount = Math.min(15, filtered.length - currentIdx);
-  const visible = filtered.slice(currentIdx, currentIdx + showCount);
-  const offset = 190;
-  const shift = forward ? offset : -offset;
+  const startI = Math.max(0, currentIdx - COVERFLOW_RADIUS);
+  const endI = Math.min(filtered.length - 1, currentIdx + COVERFLOW_RADIUS);
 
   const favs = getFavorites();
-  stackEl.innerHTML = visible.map((entry, i) => {
-    const isCurrent = i === 0;
-    const isFav = favs.has(entryKey(entry));
-    return `<div class="card-stack ${isCurrent ? 'current' : 'behind'}${isFav ? ' favorited' : ''}" data-idx="${currentIdx + i}"
-      style="transform: translateX(${(i * offset + shift)}px); z-index: ${100 - i};">
-      ${buildCardHtml(entry, q)}
-    </div>`;
-  }).join('');
+  const shift = forward ? 1 : -1;
+  stackEl.innerHTML = buildStackHtml(favs, q, startI, endI, shift);
 
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       const cards = stackEl.querySelectorAll('.card-stack');
       for (const card of cards) {
-        const localI = parseInt(card.dataset.idx) - currentIdx;
-        card.style.transform = `translateX(${localI * offset}px)`;
+        const offset = parseInt(card.dataset.idx) - currentIdx;
+        const st = coverflowStyle(offset);
+        card.style.transform = st.t;
+        card.style.opacity = st.o;
+        card.style.filter = st.f;
+        card.style.zIndex = st.z;
+        card.classList.toggle('current', offset === 0);
+        card.classList.toggle('behind', offset !== 0);
       }
       const lastCard = cards[cards.length - 1];
       if (lastCard) {
@@ -249,6 +303,7 @@ function renderAnimated(forward) {
   });
 
   renderDots();
+  updateNavButtons();
 }
 
 function render() {
@@ -258,24 +313,18 @@ function render() {
   if (filtered.length === 0) {
     stackEl.innerHTML = '<div class="empty-state">No openers found</div>';
     renderDots();
+    updateNavButtons();
     return;
   }
 
-  const showCount = Math.min(15, filtered.length - currentIdx);
-  const visible = filtered.slice(currentIdx, currentIdx + showCount);
-  const offset = 190;
+  const startI = Math.max(0, currentIdx - COVERFLOW_RADIUS);
+  const endI = Math.min(filtered.length - 1, currentIdx + COVERFLOW_RADIUS);
 
   const favs = getFavorites();
-  stackEl.innerHTML = visible.map((entry, i) => {
-    const isCurrent = i === 0;
-    const isFav = favs.has(entryKey(entry));
-    return `<div class="card-stack ${isCurrent ? 'current' : 'behind'}${isFav ? ' favorited' : ''}" data-idx="${currentIdx + i}"
-      style="transform: translateX(${i * offset}px); z-index: ${100 - i};">
-      ${buildCardHtml(entry, q)}
-    </div>`;
-  }).join('');
+  stackEl.innerHTML = buildStackHtml(favs, q, startI, endI, 0);
 
   renderDots();
+  updateNavButtons();
 }
 
 document.addEventListener('keydown', e => {
@@ -291,6 +340,11 @@ document.addEventListener('keydown', e => {
 
 document.addEventListener('wheel', e => {
   if (e.target.closest('#stack')) {
+    const summary = e.target.closest('.trait-summary');
+    if (summary && summary.scrollHeight > summary.clientHeight + 1) return;
+    const tableau = stackEl.closest('.tableau');
+    const hasVerticalOverflow = tableau && tableau.scrollHeight > tableau.clientHeight + 1;
+    if (hasVerticalOverflow) return;
     e.preventDefault();
     if (e.deltaY > 0) goTo(currentIdx + 1);
     else goTo(currentIdx - 1);
@@ -299,8 +353,15 @@ document.addEventListener('wheel', e => {
 
 
 stackEl.addEventListener('click', e => {
-  const target = e.target.closest('.star, .champ-name, .tag, .card-stack.behind');
+  const card = e.target.closest('.card-stack');
+  if (!card) return;
+  const target = e.target.closest('.star, .champ, .tag, .card-stack.behind');
   if (!target) return;
+
+  if (card.classList.contains('behind')) {
+    goTo(parseInt(card.dataset.idx));
+    return;
+  }
 
   if (target.classList.contains('star')) {
     e.stopPropagation();
@@ -318,9 +379,10 @@ stackEl.addEventListener('click', e => {
     return;
   }
 
-  if (target.classList.contains('champ-name')) {
+  if (target.classList.contains('champ') || target.closest('.champ')) {
     e.stopPropagation();
-    search.value = target.textContent.trim();
+    const name = target.closest('.champ').querySelector('.champ-name').textContent.trim();
+    search.value = name;
     search.dispatchEvent(new Event('input'));
     return;
   }
@@ -332,10 +394,6 @@ stackEl.addEventListener('click', e => {
     search.dispatchEvent(new Event('input'));
     return;
   }
-
-  if (target.classList.contains('behind')) {
-    goTo(parseInt(target.dataset.idx));
-  }
 });
 
 document.getElementById('clearFavs').addEventListener('click', () => {
@@ -344,6 +402,16 @@ document.getElementById('clearFavs').addEventListener('click', () => {
   animating = false;
   render();
 });
+
+const updateNavButtons = () => {
+  const q = search.value.toLowerCase().trim();
+  const n = applyFilterAndSort(q).length;
+  prevBtn.disabled = currentIdx <= 0;
+  nextBtn.disabled = currentIdx >= n - 1;
+};
+
+prevBtn.addEventListener('click', () => goTo(currentIdx - 1));
+nextBtn.addEventListener('click', () => goTo(currentIdx + 1));
 
 const allChamps = [...new Set(data.flatMap(e => e.units))];
 const allTraitsList = [...new Set(Object.values(traits).flat())];
@@ -369,6 +437,13 @@ search.addEventListener('input', () => {
   animating = false;
   renderAnimated(true);
   updateSuggestions();
+  searchClear.classList.toggle('visible', search.value.length > 0);
+});
+
+searchClear.addEventListener('click', () => {
+  search.value = '';
+  search.focus();
+  search.dispatchEvent(new Event('input'));
 });
 
 document.getElementById('suggestions').addEventListener('click', e => {

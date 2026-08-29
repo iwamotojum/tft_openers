@@ -118,7 +118,10 @@ function buildCardHtml(entry, q) {
   const champHtml = units.map(u => {
     const isMatch = q && normalizeSearch(u).includes(nq);
     const imgSrc = `images/champions/${champImageFile(u)}.png`;
-    return `<div class="champ"><div class="champ-name ${isMatch ? 'matched' : ''}">${u}<span class="champ-img-wrap"><img class="champ-img" src="${imgSrc}" alt="${u}" loading="lazy"></span></div></div>`;
+    const champTraits = (traits[u] || []).map(t =>
+      `<img class="trait-img champ-trait" style="border-color:${traitColor(t)}" src="images/traits/${traitImageFile(t)}.png" alt="${t}" title="${t}" loading="lazy">`
+    ).join('');
+    return `<div class="champ"><span class="champ-img-wrap"><img class="champ-img" src="${imgSrc}" alt="${u}" loading="lazy"></span><div class="champ-info"><div class="champ-name ${isMatch ? 'matched' : ''}">${u}</div><div class="champ-traits">${champTraits}</div></div></div>`;
   }).join('');
 
   const traitCounts = getTraitCounts(units);
@@ -299,7 +302,7 @@ document.addEventListener('wheel', e => {
 
 
 stackEl.addEventListener('click', e => {
-  const target = e.target.closest('.star, .champ-name, .tag, .card-stack.behind');
+  const target = e.target.closest('.star, .champ, .tag, .card-stack.behind');
   if (!target) return;
 
   if (target.classList.contains('star')) {
@@ -318,9 +321,10 @@ stackEl.addEventListener('click', e => {
     return;
   }
 
-  if (target.classList.contains('champ-name')) {
+  if (target.classList.contains('champ') || target.closest('.champ')) {
     e.stopPropagation();
-    search.value = target.textContent.trim();
+    const name = target.closest('.champ').querySelector('.champ-name').textContent.trim();
+    search.value = name;
     search.dispatchEvent(new Event('input'));
     return;
   }
