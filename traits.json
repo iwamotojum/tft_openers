@@ -1,0 +1,130 @@
+{
+  "ezreal": [
+    "rasga-tempo",
+    "atirador de elite"
+  ],
+  "rek'sai": [
+    "primordiano",
+    "lutador"
+  ],
+  "pantheon": [
+    "rasga-tempo",
+    "lutador",
+    "replicador"
+  ],
+  "samira": [
+    "embalos do espaço",
+    "atirador de elite"
+  ],
+  "aatrox": [
+    "n.o.v.a",
+    "bastião"
+  ],
+  "twisted fate": [
+    "astromante",
+    "tecelão do destino"
+  ],
+  "talon": [
+    "astromante",
+    "ladino"
+  ],
+  "jax": [
+    "astromante",
+    "bastião"
+  ],
+  "nasus": [
+    "embalos no espaço",
+    "vanguarda"
+  ],
+  "teemo": [
+    "embalos no espaço",
+    "pastor"
+  ],
+  "mordekaiser": [
+    "estrela negra",
+    "conduíte",
+    "vanguarda"
+  ],
+  "gwen": [
+    "embalos no espaço",
+    "ladino"
+  ],
+  "leona": [
+    "árbitro",
+    "vanguarda"
+  ],
+  "zoe": [
+    "árbitro",
+    "conduíte"
+  ],
+  "briar": [
+    "anima",
+    "primordiano",
+    "ladino"
+  ],
+  "jinx": [
+    "anima",
+    "desafiante"
+  ],
+  "aurora": [
+    "anima",
+    "viajante"
+  ],
+  "illaoi": [
+    "anima",
+    "vanguarda",
+    "pastor"
+  ],
+  "lissandra": [
+    "estrela negra",
+    "pastor",
+    "replicador"
+  ],
+  "bel'veth": [
+    "primordiano",
+    "desafiante",
+    "saqueador"
+  ],
+  "cho'gath": [
+    "estrela negra",
+    "lutador"
+  ],
+  "milio": [
+    "rasga-tempo",
+    "tecelão do destino"
+  ],
+  "lulu": [
+    "astromante",
+    "replicador"
+  ],
+  "kai'sa": [
+    "estrela negra",
+    "ladino"
+  ],
+  "caitlyn": [
+    "n.o.v.a",
+    "tecelão do destino"
+  ],
+  "poppy": [
+    "mipo",
+    "bastião"
+  ],
+  "veigar": [
+    "mipo",
+    "replicador"
+  ],
+  "mipim": [
+    "mipo",
+    "pastor",
+    "viajante"
+  ],
+  "gnar": [
+    "mipo",
+    "atirador de elite"
+  ],
+  "miss fortune": [
+    "conduíte",
+    "desafiante",
+    "replicador"
+  ]
+}

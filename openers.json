@@ -1,0 +1,20 @@
+[
+  {"units": ["ezreal", "rek'sai", "pantheon", "samira"]},
+  {"units": ["aatrox", "twisted fate", "talon", "jax"]},
+  {"units": ["nasus", "teemo", "mordekaiser", "gwen"]},
+  {"units": ["leona", "teemo", "mordekaiser", "zoe"]},
+  {"units": ["teemo", "leona", "mordekaiser", "zoe"]},
+  {"units": ["briar", "jinx", "aurora"]},
+  {"units": ["briar", "jinx", "illaoi"]},
+  {"units": ["leona", "lissandra", "mordekaiser", "zoe"]},
+  {"units": ["briar", "rek'sai", "bel'veth", "jinx"]},
+  {"units": ["cho'gath", "rek'sai", "briar", "bel'veth"]},
+  {"units": ["rek'sai", "milio", "pantheon", "lulu"]},
+  {"units": ["briar", "cho'gath", "rek'sai", "kai'sa"]},
+  {"units": ["aatrox", "twisted fate", "caitlyn", "jax"]},
+  {"units": ["cho'gath", "ezreal", "lissandra", "pantheon"]},
+  {"units": ["lissandra", "poppy", "veigar", "mipim"]},
+  {"units": ["aatrox", "poppy", "mipim", "gnar"]},
+  {"units": ["rek'sai", "ezreal", "gnar", "pantheon"]},
+  {"units": ["cho'gath", "lissandra", "pantheon", "miss fortune"]}
+]

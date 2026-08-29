@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TFT Champion Traits</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0d0d0d;
+    color: #e0e0e0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+  }
+
+  .counter {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 24px;
+  }
+
+  .card {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    padding: 48px 64px;
+    text-align: center;
+    margin-bottom: 32px;
+    min-width: 320px;
+  }
+
+  .champion-name {
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+
+  .inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 320px;
+  }
+
+  .inputs input {
+    width: 100%;
+    padding: 14px 18px;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    background: #1a1a1a;
+    color: #e0e0e0;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .inputs input:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+  }
+  .inputs input::placeholder { color: #555; }
+
+  .actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    min-width: 320px;
+  }
+
+  .actions button {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .actions button:hover { opacity: 0.9; }
+  .actions button:active { opacity: 0.7; }
+
+  .btn-save {
+    background: #6366f1;
+    color: #fff;
+  }
+  .btn-skip {
+    background: #2a2a2a;
+    color: #888;
+  }
+  .btn-reset {
+    background: transparent;
+    color: #555;
+    border: 1px solid #2a2a2a !important;
+    margin-top: 40px;
+  }
+  .btn-reset:hover { border-color: #f87171 !important; color: #f87171; }
+
+  .done-text {
+    font-size: 20px;
+    color: #555;
+    text-align: center;
+  }
+  .done-text span { color: #a78bfa; }
+
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+  <div class="counter" id="counter"></div>
+  <div class="card" id="card">
+    <div class="champion-name" id="name"></div>
+  </div>
+  <div class="inputs" id="inputs">
+    <input type="text" id="t1" placeholder="Trait 1" autocomplete="off">
+    <input type="text" id="t2" placeholder="Trait 2" autocomplete="off">
+    <input type="text" id="t3" placeholder="Trait 3" autocomplete="off">
+  </div>
+  <div class="actions" id="actions">
+    <button class="btn-save" id="btnSave">Save</button>
+    <button class="btn-skip" id="btnSkip">Skip</button>
+  </div>
+  <button class="btn-reset hidden" id="btnReset">Reset All Data</button>
+
+<script>
+const data = [
+  {"units": ["ezreal", "rek'sai", "pantheon", "samira"]},
+  {"units": ["aatrox", "twisted fate", "talon", "jax"]},
+  {"units": ["nasus", "teemo", "mordekaiser", "gwen"]},
+  {"units": ["leona", "teemo", "mordekaiser", "zoe"]},
+  {"units": ["teemo", "leona", "mordekaiser", "zoe"]},
+  {"units": ["briar", "jinx", "aurora/illaoi"]},
+  {"units": ["leona", "lissandra", "mordekaiser", "zoe"]},
+  {"units": ["briar", "rek'sai", "bel'veth", "jinx"]},
+  {"units": ["cho'gath", "rek'sai", "briar", "bel'veth"]},
+  {"units": ["rek'sai", "milio", "pantheon", "lulu"]},
+  {"units": ["briar", "cho'gath", "rek'sai", "kai'sa"]},
+  {"units": ["aatrox", "twisted fate", "caitlyn", "jax"]},
+  {"units": ["cho'gath", "ezreal", "lissandra", "pantheon"]},
+  {"units": ["lissandra", "poppy", "veigar", "mipim"]},
+  {"units": ["aatrox", "poppy", "mipim", "gnar"]},
+  {"units": ["rek'sai", "ezreal", "gnar", "pantheon"]},
+  {"units": ["cho'gath", "lissandra", "pantheon", "miss fortune"]}
+];
+
+const uniqueNames = [...new Set(data.flatMap(entry =>
+  entry.units.flatMap(u => u.includes('/') ? u.split('/') : [u])
+))];
+
+const STORAGE_KEY = 'tft_champion_traits';
+const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+const remaining = uniqueNames.filter(name => !(name in saved));
+
+const nameEl = document.getElementById('name');
+const counterEl = document.getElementById('counter');
+const t1 = document.getElementById('t1');
+const t2 = document.getElementById('t2');
+const t3 = document.getElementById('t3');
+const btnSave = document.getElementById('btnSave');
+const btnSkip = document.getElementById('btnSkip');
+const btnReset = document.getElementById('btnReset');
+const card = document.getElementById('card');
+const inputs = document.getElementById('inputs');
+const actions = document.getElementById('actions');
+
+let currentIdx = 0;
+
+function showCurrent() {
+  if (currentIdx >= remaining.length) {
+    done();
+    return;
+  }
+  nameEl.textContent = remaining[currentIdx];
+  counterEl.textContent = `${currentIdx + 1} / ${remaining.length}`;
+  t1.value = '';
+  t2.value = '';
+  t3.value = '';
+  t1.focus();
+}
+
+function next() {
+  currentIdx++;
+  showCurrent();
+}
+
+function done() {
+  card.innerHTML = '<div class="done-text">All done! <span>' + Object.keys(saved).length + '</span> champions saved.</div>';
+  counterEl.textContent = '';
+  inputs.classList.add('hidden');
+  actions.classList.add('hidden');
+  btnReset.classList.remove('hidden');
+}
+
+btnSave.addEventListener('click', () => {
+  const name = remaining[currentIdx];
+  if (!name) return;
+  const val1 = t1.value.trim();
+  const val2 = t2.value.trim();
+  const val3 = t3.value.trim();
+  saved[name] = [val1, val2, val3];
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+  next();
+});
+
+btnSkip.addEventListener('click', () => {
+  next();
+});
+
+btnReset.addEventListener('click', () => {
+  if (confirm('Reset all saved trait data?')) {
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+  }
+});
+
+// Enter key to save
+function onKeyDown(e) {
+  if (e.key === 'Enter') btnSave.click();
+}
+t1.addEventListener('keydown', onKeyDown);
+t2.addEventListener('keydown', onKeyDown);
+t3.addEventListener('keydown', onKeyDown);
+
+showCurrent();
+</script>
+</body>
+</html>
