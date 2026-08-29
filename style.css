@@ -111,14 +111,15 @@ body {
 .tableau {
   flex: 1;
   display: flex;
-  align-items: flex-start;
-  justify-content: flex-start;
+  align-items: center;
+  justify-content: center;
   min-height: 0;
   position: relative;
   overflow-x: auto;
+  overflow-y: hidden;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  padding: 80px 0 0 24px;
+  padding: 40px 24px;
 }
 
 .tableau::-webkit-scrollbar { display: none; }
@@ -127,14 +128,19 @@ body {
   position: relative;
   width: 100%;
   min-height: 420px;
+  perspective: 1400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .card-stack {
   position: absolute;
-  top: 0;
-  left: 0;
+  top: 50%;
+  left: 50%;
   width: 260px;
   min-height: 380px;
+  margin-top: -190px;
   background: #1a1a1a;
   border: 1px solid #2a2a2a;
   border-radius: 16px;
@@ -143,15 +149,18 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  transition: transform 0.35s cubic-bezier(0, 0, 0.15, 1);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.55s ease, filter 0.55s ease;
   cursor: pointer;
+  will-change: transform, opacity, filter;
 }
 .card-stack.current {
-  z-index: 100;
+  z-index: 30;
   cursor: default;
 }
 .card-stack.behind {
-  z-index: 1;
+  z-index: 10;
   cursor: pointer;
 }
 .card-stack.behind:hover {
@@ -280,9 +289,9 @@ body {
 }
 
 @media (max-width: 700px) {
-  .card-stack { width: 230px; min-height: 340px; padding: 20px 14px; }
+  .card-stack { width: 230px; min-height: 340px; padding: 20px 14px; margin-top: -170px; }
   .card-stack .champ { font-size: 22px; }
-  .tableau { padding-left: 12px; }
+  .tableau { padding: 24px 12px; }
 }
 
 .credit {

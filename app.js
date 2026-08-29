@@ -161,8 +161,13 @@ function goTo(idx) {
     const cards = stackEl.querySelectorAll('.card-stack');
     for (const card of cards) {
       card.style.transition = 'none';
-      const localI = parseInt(card.dataset.idx) - currentIdx;
-      card.style.transform = `translateX(${localI * 190}px)`;
+      const offset = parseInt(card.dataset.idx) - idx;
+      const st = coverflowStyle(offset);
+      card.style.transform = st.t;
+      card.style.opacity = st.o;
+      card.style.filter = st.f;
+      card.style.zIndex = st.z;
+      void card.offsetWidth;
     }
     animating = false;
   }
@@ -202,6 +207,51 @@ function applyFilterAndSort(q) {
   return result;
 }
 
+const CARD_OFFSET = 260;
+const COVERFLOW_RADIUS = 3;
+
+function coverflowStyle(offset) {
+  const abs = Math.abs(offset);
+  const sign = offset === 0 ? 0 : Math.sign(offset);
+  const cx = 'translateX(-50%)';
+
+  if (offset === 0) {
+    return { t: `${cx} translateX(0) scale(1) rotateY(0deg)`, o: 1, z: 30, f: 'none', pe: 'auto' };
+  }
+  if (abs === 1) {
+    return {
+      t: `${cx} translateX(${sign * CARD_OFFSET}px) scale(0.84) rotateY(${-sign * 24}deg)`,
+      o: 0.65, z: 20, f: 'brightness(0.75)', pe: 'auto'
+    };
+  }
+  if (abs === 2) {
+    return {
+      t: `${cx} translateX(${sign * CARD_OFFSET * 1.8}px) scale(0.68) rotateY(${-sign * 38}deg)`,
+      o: 0.38, z: 10, f: 'brightness(0.55) blur(1px)', pe: 'auto'
+    };
+  }
+  return {
+    t: `${cx} translateX(${sign * CARD_OFFSET * 4}px) scale(0.5) rotateY(${-sign * 30}deg)`,
+    o: 0, z: 1, f: 'brightness(0.4) blur(2px)', pe: 'none'
+  };
+}
+
+function buildStackHtml(favs, q, startI, endI, extraOffset) {
+  const parts = [];
+  for (let idx = startI; idx <= endI; idx++) {
+    const entry = filtered[idx];
+    const offset = (idx - currentIdx) + extraOffset;
+    const st = coverflowStyle(offset);
+    const isCurrent = offset === 0;
+    const isFav = favs.has(entryKey(entry));
+    parts.push(`<div class="card-stack ${isCurrent ? 'current' : 'behind'}${isFav ? ' favorited' : ''}" data-idx="${idx}"
+      style="transform: ${st.t}; opacity: ${st.o}; z-index: ${st.z}; filter: ${st.f}; pointer-events: ${st.pe};">
+      ${buildCardHtml(entry, q)}
+    </div>`);
+  }
+  return parts.join('');
+}
+
 function renderAnimated(forward) {
   const q = search.value.toLowerCase().trim();
   filtered = applyFilterAndSort(q);
@@ -213,27 +263,25 @@ function renderAnimated(forward) {
     return;
   }
 
-  const showCount = Math.min(15, filtered.length - currentIdx);
-  const visible = filtered.slice(currentIdx, currentIdx + showCount);
-  const offset = 190;
-  const shift = forward ? offset : -offset;
+  const startI = Math.max(0, currentIdx - COVERFLOW_RADIUS);
+  const endI = Math.min(filtered.length - 1, currentIdx + COVERFLOW_RADIUS);
 
   const favs = getFavorites();
-  stackEl.innerHTML = visible.map((entry, i) => {
-    const isCurrent = i === 0;
-    const isFav = favs.has(entryKey(entry));
-    return `<div class="card-stack ${isCurrent ? 'current' : 'behind'}${isFav ? ' favorited' : ''}" data-idx="${currentIdx + i}"
-      style="transform: translateX(${(i * offset + shift)}px); z-index: ${100 - i};">
-      ${buildCardHtml(entry, q)}
-    </div>`;
-  }).join('');
+  const shift = forward ? 1 : -1;
+  stackEl.innerHTML = buildStackHtml(favs, q, startI, endI, shift);
 
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       const cards = stackEl.querySelectorAll('.card-stack');
       for (const card of cards) {
-        const localI = parseInt(card.dataset.idx) - currentIdx;
-        card.style.transform = `translateX(${localI * offset}px)`;
+        const offset = parseInt(card.dataset.idx) - currentIdx;
+        const st = coverflowStyle(offset);
+        card.style.transform = st.t;
+        card.style.opacity = st.o;
+        card.style.filter = st.f;
+        card.style.zIndex = st.z;
+        card.classList.toggle('current', offset === 0);
+        card.classList.toggle('behind', offset !== 0);
       }
       const lastCard = cards[cards.length - 1];
       if (lastCard) {
@@ -261,19 +309,11 @@ function render() {
     return;
   }
 
-  const showCount = Math.min(15, filtered.length - currentIdx);
-  const visible = filtered.slice(currentIdx, currentIdx + showCount);
-  const offset = 190;
+  const startI = Math.max(0, currentIdx - COVERFLOW_RADIUS);
+  const endI = Math.min(filtered.length - 1, currentIdx + COVERFLOW_RADIUS);
 
   const favs = getFavorites();
-  stackEl.innerHTML = visible.map((entry, i) => {
-    const isCurrent = i === 0;
-    const isFav = favs.has(entryKey(entry));
-    return `<div class="card-stack ${isCurrent ? 'current' : 'behind'}${isFav ? ' favorited' : ''}" data-idx="${currentIdx + i}"
-      style="transform: translateX(${i * offset}px); z-index: ${100 - i};">
-      ${buildCardHtml(entry, q)}
-    </div>`;
-  }).join('');
+  stackEl.innerHTML = buildStackHtml(favs, q, startI, endI, 0);
 
   renderDots();
 }
