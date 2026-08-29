@@ -216,7 +216,7 @@ const COVERFLOW_RADIUS = 3;
 function coverflowStyle(offset) {
   const abs = Math.abs(offset);
   const sign = offset === 0 ? 0 : Math.sign(offset);
-  const cx = 'translateX(-50%)';
+  const cx = 'translate(-50%, -50%)';
 
   if (offset === 0) {
     return { t: `${cx} translateX(0) scale(1) rotateY(0deg)`, o: 1, z: 30, f: 'none', pe: 'auto' };
@@ -334,6 +334,11 @@ document.addEventListener('keydown', e => {
 
 document.addEventListener('wheel', e => {
   if (e.target.closest('#stack')) {
+    const summary = e.target.closest('.trait-summary');
+    if (summary && summary.scrollHeight > summary.clientHeight + 1) return;
+    const tableau = stackEl.closest('.tableau');
+    const hasVerticalOverflow = tableau && tableau.scrollHeight > tableau.clientHeight + 1;
+    if (hasVerticalOverflow) return;
     e.preventDefault();
     if (e.deltaY > 0) goTo(currentIdx + 1);
     else goTo(currentIdx - 1);
